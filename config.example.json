@@ -1,0 +1,17 @@
+{
+  "api": {
+    "base_url": "https://api.deepseek.com",
+    "model": "deepseek-v4-flash",
+    "api_key": "",
+    "timeout": 60
+  },
+  "ui": {
+    "main_window_size": [1200, 800],
+    "settings_window_size": [1000, 600],
+    "main_title_font": "",
+    "main_body_font": "",
+    "settings_title_font": "",
+    "settings_body_font": ""
+  },
+  "presets_dir": "./Presets"
+}

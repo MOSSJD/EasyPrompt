@@ -1,0 +1,6 @@
+{
+  "name": "default",
+  "title": "default",
+  "model": "deepseek-v4-flash",
+  "system_prompt": ""
+}
