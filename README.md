@@ -20,7 +20,7 @@ copy config.example.json config.json
 # 编辑 config.json，在 api.api_key 中填入你的 DeepSeek API Key
 
 # 3. 运行
-python -m easyprompt.main
+python src/easyprompt/main.py
 ```
 
 ## 功能
