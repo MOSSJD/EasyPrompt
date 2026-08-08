@@ -1,6 +1,8 @@
-"""DeepSeek API 客户端（OpenAI 兼容 REST，非流式）与子线程 Worker。"""
+"""DeepSeek API 客户端（OpenAI 兼容 REST，非流式）与后台 Worker。"""
 
 from __future__ import annotations
+
+import threading
 
 import requests
 from PySide6.QtCore import QObject, Signal, Slot
@@ -89,10 +91,10 @@ class DeepSeekClient:
 
 
 class ApiWorker(QObject):
-    """运行在 QThread 子线程中的 API 调用器。
+    """后台 API 调用器（Python threading 实现）。
 
-    通过 Qt 信号队列连接实现跨线程触发与回传：
-        worker.finished(str) / worker.failed(str) 均在主线程执行。
+    通过 Qt 信号跨线程回传结果：从子线程 emit 信号会自动排队，
+    finished(str) / failed(str) 槽在主线程（UI 线程）执行，线程安全。
     """
 
     finished = Signal(str)
@@ -101,23 +103,38 @@ class ApiWorker(QObject):
     def __init__(self, client: DeepSeekClient, parent: QObject | None = None):
         super().__init__(parent)
         self._client = client
-        self._cancelled = False
+        self._cancelled = threading.Event()
+        self._thread: threading.Thread | None = None
 
     @Slot(str, str)
     def run(self, user_prompt: str, system_prompt: str) -> None:
-        """在子线程中同步调用 API（由跨线程信号触发，勿直接调用）。"""
+        """启动后台线程执行 API 调用（可重复调用，互不阻塞）。"""
+        if self._thread is not None and self._thread.is_alive():
+            return
+        self._thread = threading.Thread(
+            target=self._target,
+            args=(user_prompt, system_prompt),
+            name="api-worker",
+            daemon=True,
+        )
+        self._thread.start()
+
+    def _target(self, user_prompt: str, system_prompt: str) -> None:
         try:
             text = self._client.chat(user_prompt, system_prompt)
-            if not self._cancelled:
+            if not self._cancelled.is_set():
                 self.finished.emit(text)
         except Exception as exc:  # noqa: BLE001 - 所有异常统一转错误信号
-            if not self._cancelled:
+            if not self._cancelled.is_set():
                 self.failed.emit(str(exc))
 
     def cancel(self) -> None:
-        """标记取消：线程中请求结束后不再回传结果（主线程调用）。"""
-        self._cancelled = True
+        """标记取消：请求结束后不再回传结果（任意线程可调用）。"""
+        self._cancelled.set()
 
     def reset(self) -> None:
-        """清除取消标记（主线程调用）。"""
-        self._cancelled = False
+        """清除取消标记（下次请求前调用）。"""
+        self._cancelled.clear()
+
+    def is_busy(self) -> bool:
+        return self._thread is not None and self._thread.is_alive()

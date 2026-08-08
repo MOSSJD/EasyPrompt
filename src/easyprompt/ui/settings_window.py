@@ -216,7 +216,7 @@ class SettingsWindow(QWidget):
         if item.parent() is None:
             # 顶层节点：点击"界面"切换展开/收起；点击"预设"显示表单
             if item.text(0) == "界面":
-                self.tree.setItemExpanded(item, not item.isExpanded())
+                item.setExpanded(not item.isExpanded())
                 if item.isExpanded():
                     self.tree.setCurrentItem(self.item_main)
                     self._show_page(0)

@@ -5,6 +5,7 @@ __pycache__/
 *.egg-info/
 .eggs/
 .venv/
+.venv*/
 venv/
 build/
 dist/
@@ -30,3 +31,9 @@ htmlcov/
 
 # 日志
 *.log
+
+# 临时脚本
+_*.py
+
+# 调试示例预设
+Presets/coder.json

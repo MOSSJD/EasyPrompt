@@ -76,10 +76,14 @@ def test_settings_window_constructs_and_expand(qapp, app_context):
     config, preset_manager, font_manager = app_context
     win = SettingsWindow(config, preset_manager, font_manager)
     assert win.stack.count() == 3
-    # "界面"默认展开
-    assert win.item_main.isExpanded() is False  # 子项无展开概念，仅验证节点存在
-    assert win.tree.topLevelItem(0).isExpanded() is True
-    # 点击"界面"折叠，再点击展开
-    win.tree.setItemExpanded(win.tree.topLevelItem(0), False)
-    assert win.tree.topLevelItem(0).isExpanded() is False
+    # "界面"默认展开，含两个子项
+    top = win.tree.topLevelItem(0)
+    assert top.isExpanded() is True
+    assert top.childCount() == 2
+    assert [top.child(i).text(0) for i in range(2)] == ["主页面", "设置"]
+    # 折叠后再展开
+    top.setExpanded(False)
+    assert top.isExpanded() is False
+    top.setExpanded(True)
+    assert top.isExpanded() is True
     win.close()

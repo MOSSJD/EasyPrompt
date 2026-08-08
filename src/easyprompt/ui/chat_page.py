@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, QThread, QTimer, Signal
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -24,9 +24,6 @@ from .widgets import (
 class ChatPage(QWidget):
     """主功能界面：输入 → 调用 API → 输出展示。"""
 
-    # 跨线程触发 worker（Qt 自动队列连接至子线程）
-    request_signal = Signal(str, str)
-
     def __init__(self, config, api_client, parent: QWidget | None = None):
         super().__init__(parent)
         self._config = config
@@ -34,12 +31,8 @@ class ChatPage(QWidget):
         self._busy = False
         self._build_ui()
 
-        # API 子线程（常驻）
-        self._thread = QThread(self)
+        # 后台 API Worker（内部使用 Python threading，信号回传主线程）
         self._worker = ApiWorker(api_client)
-        self._worker.moveToThread(self._thread)
-        self._thread.start()
-        self.request_signal.connect(self._worker.run)
         self._worker.finished.connect(self._on_finished)
         self._worker.failed.connect(self._on_failed)
 
@@ -126,7 +119,7 @@ class ChatPage(QWidget):
         self._watchdog.start((self._config.timeout + 10) * 1000)
 
         self._worker.reset()
-        self.request_signal.emit(user_prompt, system_prompt)
+        self._worker.run(user_prompt, system_prompt)
 
     def _on_finished(self, text: str) -> None:
         self._watchdog.stop()
@@ -155,6 +148,6 @@ class ChatPage(QWidget):
         self.system_input.findChild(QTextEdit).setPlainText(text)
 
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt 命名)
-        self._thread.quit()
-        self._thread.wait(2000)
+        # 后台线程为 daemon，无需等待；取消在途请求避免回传
+        self._worker.cancel()
         super().closeEvent(event)
