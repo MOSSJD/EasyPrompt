@@ -620,4 +620,6 @@ Release 内容应与 Tag Message 保持一致，并可额外补充：
 
 新增/改动/删除任何代码前都必须stage所有新增/改动/删除文件、新增版本号（如果不确定使用哪个版本号则询问用户）并执行git commit。
 
+仅在用户明确要求发布 GitHub Release 时才创建 GitHub Release；其余版本发布只创建并推送 Annotated Tag，不自动创建 Release。
+
 当我说“撤回”时撤回到指定版本（版本号/Hash Code），如果没有提供版本或版本错误则不进行撤回并要求用户提供版本。

@@ -15,6 +15,17 @@ from PySide6.QtGui import QFontDatabase
 
 FONT_EXTENSIONS = (".ttf", ".otf", ".ttc")
 
+# Windows 3.x 时代遗留的字体族名：仅有注册名、没有真实字体文件，
+# DirectWrite 无法加载，枚举时会产生大量 qt.qpa.fonts 警告，直接过滤。
+_LEGACY_FONT_FAMILIES = {
+    "script",
+    "system",
+    "terminal",
+    "fixedsys",
+    "modern",
+    "roman",
+}
+
 
 class FontManager:
     """系统字体列表查询与字体导入。"""
@@ -25,8 +36,12 @@ class FontManager:
     # ---- 系统字体 ----
     @staticmethod
     def list_system_fonts() -> list[str]:
-        """返回按字母排序的系统可用字体族名。"""
-        return sorted(QFontDatabase.families())
+        """返回按字母排序的系统可用字体族名（已过滤 Windows 遗留旧字体）。"""
+        return sorted(
+            family
+            for family in QFontDatabase.families()
+            if family.lower() not in _LEGACY_FONT_FAMILIES
+        )
 
     # ---- 导入 ----
     @staticmethod

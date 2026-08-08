@@ -15,6 +15,21 @@ def test_list_system_fonts_returns_sorted_list(qapp):
     # 因此不断言非空，仅验证接口契约与排序。
 
 
+def test_list_system_fonts_filters_legacy_families(qapp, monkeypatch):
+    """Windows 遗留旧字体（无真实字体文件）应从列表中过滤掉。"""
+    from easyprompt import fonts as fonts_module
+
+    monkeypatch.setattr(
+        fonts_module.QFontDatabase,
+        "families",
+        staticmethod(
+            lambda: ["Microsoft YaHei", "Script", "system", "Terminal", "Arial"]
+        ),
+    )
+    result = FontManager.list_system_fonts()
+    assert result == ["Arial", "Microsoft YaHei"]
+
+
 def test_persist_imported_copies_file(tmp_path, qapp):
     src = tmp_path / "MyFont.ttf"
     src.write_bytes(b"fake-font-bytes")
