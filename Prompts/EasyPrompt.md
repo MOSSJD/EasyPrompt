@@ -118,7 +118,7 @@
 
 ### 分支要求
 
-分支分为main和feature/x、develop/x、fix/x-y、release/x，默认为develop/x。main为主分支，存放目前最新的release版本。feature/x为功能分支，x为功能，负责说明当前分支主要设计的功能模块。develop/x为开发分支，x为数字，默认为1，每增加一个开发分支就+1。fix/x-y为修复分支，x为功能，y为待修复bug的说明。release/x为发布分支，x为当前发布的版本号。
+分支分为main和feature/x、develop/x、fix/x-y、ci/x、release/x，默认为develop/x。main为主分支，存放目前最新的release版本。feature/x为功能分支，x为功能，负责说明当前分支主要设计的功能模块。develop/x为开发分支，x为数字，默认为1，每增加一个开发分支就+1。fix/x-y为修复分支，x为功能，y为待修复bug的说明。ci/x为CI/CD分支，x为数字，默认为1，负责CI/CD配置、流程、依赖的修复与改进，每增加一个CI分支就+1；CI修复在ci/x分支上开发并验证，通过后合并回develop/x。release/x为发布分支，x为当前发布的版本号。
 
 ### 版本号要求
 
